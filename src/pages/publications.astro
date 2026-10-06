@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PubList from '../components/PubList.astro';
+import { publications } from '../data/publications';
+
+const published = publications.filter((p) => ['published', 'accepted'].includes(p.status));
+const ongoing = publications.filter((p) => !['published', 'accepted'].includes(p.status));
+---
+
+<BaseLayout
+  title="Publications"
+  description="Journal articles, conference papers and manuscripts by Yuanhao Liu."
+>
+  <div class="container">
+    <h1>Publications</h1>
+    <p>
+      Journal articles, conference papers and manuscripts. My name is highlighted in bold; PDF and
+      DOI links appear as soon as they are available.
+    </p>
+
+    <section class="section">
+      <h2 class="section__title">Published & Accepted</h2>
+      <PubList items={published} />
+    </section>
+
+    <section class="section">
+      <h2 class="section__title">Submitted & In Preparation</h2>
+      <PubList items={ongoing} startIndex={published.length + 1} />
+    </section>
+  </div>
+</BaseLayout>

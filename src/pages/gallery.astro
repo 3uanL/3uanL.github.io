@@ -1,0 +1,56 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+/**
+ * 相册页：把照片放进 src/assets/gallery/ 就会自动出现在这里。
+ * 文件名即说明文字（用减号代替空格，例如 sunset-at-shenzhen-bay.jpg → "sunset at shenzhen bay"）。
+ */
+const globbed = import.meta.glob<{ default: ImageMetadata }>('/src/assets/gallery/*.{jpg,jpeg,png,webp,avif}', {
+  eager: true,
+});
+
+const photos = Object.entries(globbed)
+  .map(([path, mod]) => {
+    const file = path.split('/').pop() ?? '';
+    const caption = file
+      .replace(/\.[^.]+$/, '')
+      .replace(/[-_]+/g, ' ')
+      .trim();
+    return { caption, src: mod.default, path };
+  })
+  .sort((a, b) => a.caption.localeCompare(b.caption));
+---
+
+<BaseLayout title="Gallery" description="Photos and life outside the lab.">
+  <div class="container container--wide">
+    <h1>Gallery</h1>
+    <p>A few things outside the lab.</p>
+
+    {
+      photos.length === 0 ? (
+        <div class="empty">
+          <h3>The album is empty</h3>
+          <p>
+            Drop image files into <code>src/assets/gallery/</code> and they will show up here
+            automatically — the file name becomes the caption.
+          </p>
+          <p style="margin-bottom:0">
+            Example: <code>shenzhen-bay-sunset.jpg</code> → caption "shenzhen bay sunset". Keep
+            photos under ~1 MB each so the page stays fast. (Your portrait goes in{' '}
+            <code>src/assets/portrait.jpg</code> instead.)
+          </p>
+        </div>
+      ) : (
+        <div class="gallery">
+          {photos.map((photo) => (
+            <figure>
+              <Image src={photo.src} alt={photo.caption} widths={[320, 640]} sizes="12rem" loading="lazy" />
+              <figcaption>{photo.caption}</figcaption>
+            </figure>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>

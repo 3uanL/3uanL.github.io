@@ -1,0 +1,144 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PubList from '../components/PubList.astro';
+import { publications } from '../data/publications';
+import { researchProjects, selectedProjects } from '../data/projects';
+import { honors, education, skills } from '../data/honors';
+import { site } from '../config';
+
+/** 同一年份只显示一次，列表更好读 */
+const honorsByYear = honors.reduce<Record<string, typeof honors>>((acc, h) => {
+  const key = String(h.year);
+  (acc[key] ??= []).push(h);
+  return acc;
+}, {});
+---
+
+<BaseLayout
+  title="CV"
+  description={`Curriculum vitae of ${site.name} — education, publications, research experience and awards.`}
+>
+  <div class="container">
+    <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:baseline;justify-content:space-between">
+      <h1 style="margin-bottom:0.2rem">{site.name}</h1>
+      <a class="btn btn--primary" href={site.links.cv}>Download PDF</a>
+    </div>
+
+    <p style="color:var(--text-muted);font-size:0.95rem">
+      <a href={`mailto:${site.email}`}>{site.email}</a>
+      {site.location && <> · {site.location}</>}
+      {site.links.github && <> · <a href={site.links.github}>GitHub</a></>}
+      {site.links.scholar && <> · <a href={site.links.scholar}>Google Scholar</a></>}
+    </p>
+
+    <p style="color:var(--text-faint);font-size:0.85rem">
+      This page is generated from the same data as the rest of the site; the PDF above is the
+      one-page version. Tip: <kbd>Ctrl</kbd>+<kbd>P</kbd> prints this page without the navigation.
+    </p>
+
+    <section class="cv-section">
+      <h2 class="section__title">Education</h2>
+      <div class="cv-entry">
+        <div>
+          <strong>{education.school}</strong>
+          <div class="cv-entry__role">{education.degree}</div>
+        </div>
+        <div class="cv-entry__dates">{education.period}</div>
+        <ul>
+          {education.gpa && <li>Cumulative GPA: {education.gpa}</li>}
+          {education.ielts && <li>IELTS: {education.ielts}</li>}
+          {education.advisors.length > 0 && (
+            <li>Research advisors: {education.advisors.join(', ')}</li>
+          )}
+        </ul>
+      </div>
+    </section>
+
+    <section class="cv-section">
+      <h2 class="section__title">Publications & Manuscripts</h2>
+      <PubList items={publications} />
+    </section>
+
+    <section class="cv-section">
+      <h2 class="section__title">Research Experience</h2>
+      {
+        researchProjects.map((project) => (
+          <div class="cv-entry">
+            <div>
+              <strong>{project.lab}</strong>
+              <div class="cv-entry__role">
+                {project.role}
+                {project.advisors && project.advisors.length > 0 && (
+                  <> · Advisor: {project.advisors.join(', ')}</>
+                )}
+              </div>
+              <div style="margin-top:0.3rem">
+                <strong>{project.title}</strong> — <a href={`/research/${project.id}`}>details</a>
+              </div>
+            </div>
+            <div class="cv-entry__dates">{project.period}</div>
+            <ul>
+              {project.bullets.map((b) => (
+                <li>{b}</li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </section>
+
+    <section class="cv-section">
+      <h2 class="section__title">Selected Projects</h2>
+      {
+        selectedProjects.map((project) => (
+          <div class="cv-entry">
+            <div>
+              <strong>{project.title}</strong>
+              <div class="cv-entry__role">{project.role}</div>
+            </div>
+            <div class="cv-entry__dates">{project.period}</div>
+            <ul>
+              {project.bullets.map((b) => (
+                <li>{b}</li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </section>
+
+    <section class="cv-section">
+      <h2 class="section__title">Honors & Awards</h2>
+      <ul>
+        {
+          Object.entries(honorsByYear).map(([year, items]) => (
+            <li>
+              <strong>{year}</strong>
+              <ul>
+                {items.map((h) => (
+                  <li>
+                    {h.title}
+                    {h.meta && <> — {h.meta}</>}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="cv-section">
+      <h2 class="section__title">Skills</h2>
+      <ul>
+        {
+          skills.map((s) => (
+            <li>
+              <strong>{s.group}:</strong> {s.items}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </div>
+</BaseLayout>

@@ -1,0 +1,73 @@
+---
+import type { Publication } from '../data/publications';
+import { site } from '../config';
+
+interface Props {
+  items: Publication[];
+  /** 编号起点（首页和 Publications 页共用，从 1 开始） */
+  startIndex?: number;
+}
+
+const { items, startIndex = 1 } = Astro.props;
+
+const STATUS_LABEL: Record<Publication['status'], { text: string; muted?: boolean }> = {
+  published: { text: 'Published' },
+  accepted: { text: 'Accepted' },
+  submitted: { text: 'Submitted' },
+  'under-review': { text: 'Under review' },
+  preprint: { text: 'Preprint' },
+  'in-prep': { text: 'In preparation', muted: true },
+};
+
+function linkList(links: Publication['links']) {
+  if (!links) return [];
+  const out: { href: string; label: string }[] = [];
+  if (links.pdf) out.push({ href: links.pdf, label: 'PDF' });
+  if (links.doi) out.push({ href: links.doi, label: 'DOI' });
+  if (links.arxiv) out.push({ href: links.arxiv, label: 'arXiv' });
+  if (links.code) out.push({ href: links.code, label: 'Code' });
+  if (links.slides) out.push({ href: links.slides, label: 'Slides' });
+  if (links.poster) out.push({ href: links.poster, label: 'Poster' });
+  return out;
+}
+---
+
+<ol class="pub-list">
+  {
+    items.map((pub, i) => {
+      const status = STATUS_LABEL[pub.status];
+      const links = linkList(pub.links);
+      const parts = pub.authors.split(site.name);
+      return (
+        <li class="pub">
+          <div class="pub__index">[{startIndex + i}]</div>
+          <div>
+            <p class="pub__title">{pub.title}</p>
+            <p class="pub__authors">
+              {parts.map((part, idx) => (
+                <>
+                  {part}
+                  {idx < parts.length - 1 && <strong>{site.name}</strong>}
+                </>
+              ))}
+            </p>
+            <p class="pub__venue">
+              <em>{pub.venue}</em>, {pub.year}.{' '}
+              <span class={status.muted ? 'tag tag--muted' : 'tag'}>{status.text}</span>
+              {pub.note && <span class="tag tag--muted">{pub.note}</span>}
+            </p>
+            {links.length > 0 && (
+              <p class="pub__links">
+                {links.map((l) => (
+                  <a class="btn" href={l.href}>
+                    {l.label}
+                  </a>
+                ))}
+              </p>
+            )}
+          </div>
+        </li>
+      );
+    })
+  }
+</ol>

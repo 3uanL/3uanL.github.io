@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Search"
+  description="Search this site."
+  noindex
+>
+  <div class="container">
+    <h1>Search</h1>
+    <p>
+      Full-text search across publications, projects and blog posts. The index is built at build
+      time, so it also works offline and needs no server.
+    </p>
+
+    <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+    <div id="search"></div>
+
+    <div id="search-fallback" class="empty" hidden>
+      <h3>Search index not found</h3>
+      <p style="margin-bottom:0">
+        The search index is generated during <code>npm run build</code> (the <code>pagefind</code>{' '}
+        step). It is not available while running <code>npm run dev</code>. Run a build and preview
+        with <code>npm run preview</code> to test search locally.
+      </p>
+    </div>
+
+    <script is:inline src="/pagefind/pagefind-ui.js"></script>
+    <script is:inline>
+      window.addEventListener('DOMContentLoaded', function () {
+        if (window.PagefindUI) {
+          new window.PagefindUI({
+            element: '#search',
+            showSubResults: true,
+            showImages: false,
+            translations: {
+              placeholder: 'Search publications, projects, posts…',
+            },
+          });
+        } else {
+          var fallback = document.getElementById('search-fallback');
+          if (fallback) fallback.hidden = false;
+        }
+      });
+    </script>
+  </div>
+</BaseLayout>

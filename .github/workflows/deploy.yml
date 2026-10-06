@@ -1,0 +1,47 @@
+# 每次 push 到 main，自动构建并发布到 GitHub Pages
+# 你不需要手动运行任何命令 —— 提交上去，两分钟后网站就更新了。
+#
+# 首次使用前需要在仓库里做一次设置：Settings → Pages → Source 选 "GitHub Actions"。
+# 详细步骤见 DEPLOY.md。
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # 也可以在 Actions 页面手动点一下触发
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 连续 push 时只保留最新的一次部署
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout your repository using git
+        uses: actions/checkout@v7
+
+      # 官方 action：自动识别包管理器、跑 npm ci + npm run build、
+      # 并把 dist/ 作为发布产物上传（我们的 build 脚本里还会跑 Pagefind 生成搜索索引）
+      - name: Install, build, and upload the site
+        uses: withastro/action@v6
+        with:
+          node-version: 24
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

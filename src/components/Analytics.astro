@@ -1,0 +1,31 @@
+---
+/**
+ * 访问统计。默认什么都不加载（零追踪）。
+ * 想要统计：把 website id 填进 src/config.ts 的 analytics 字段即可。
+ */
+import { analytics } from '../config';
+
+const umamiReady = Boolean(analytics.umami.websiteId && analytics.umami.scriptUrl);
+const baiduReady = Boolean(analytics.baidu.id);
+---
+
+{umamiReady && (
+  <script
+    is:inline
+    defer
+    src={analytics.umami.scriptUrl}
+    data-website-id={analytics.umami.websiteId}
+  />
+)}
+
+{baiduReady && (
+  <script is:inline>
+    var _hmt = _hmt || [];
+    (function () {
+      var hm = document.createElement('script');
+      hm.src = 'https://hm.baidu.com/hm.js?{analytics.baidu.id}';
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+)}

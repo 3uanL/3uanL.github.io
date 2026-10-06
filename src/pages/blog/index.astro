@@ -1,0 +1,64 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+---
+
+<BaseLayout
+  title="Blog"
+  description="Notes on wireless communications, optimization and machine learning by Yuanhao Liu."
+>
+  <div class="container">
+    <h1>Blog</h1>
+    <p>
+      Working notes: derivations I had to redo, papers I found clarifying, and things I got wrong
+      the first time.
+    </p>
+
+    {
+      posts.length === 0 ? (
+        <div class="empty">
+          <h3>No posts yet</h3>
+          <p>
+            This blog is intentionally empty for now. To publish your first post, create a Markdown
+            file in <code>src/content/blog/</code> — the full recipe is in <code>README.md</code>{' '}
+            («怎么写一篇新文章»).
+          </p>
+          <p style="margin-bottom:0">
+            A ready-to-copy template is waiting at{' '}
+            <code>src/content/blog/example-post.md</code>; change <code>draft: true</code> to{' '}
+            <code>false</code> and it appears here.
+          </p>
+        </div>
+      ) : (
+        <ul class="news">
+          {posts.map((post) => (
+            <li>
+              <time datetime={post.data.date.toISOString()}>
+                {post.data.date.toLocaleDateString('en-GB', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
+              </time>
+              <p>
+                <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+                {post.data.description && (
+                  <>
+                    <br />
+                    <span style="color:var(--text-muted);font-size:0.9rem">
+                      {post.data.description}
+                    </span>
+                  </>
+                )}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</BaseLayout>

@@ -1,0 +1,57 @@
+---
+import type { Project } from '../data/projects';
+
+interface Props {
+  project: Project;
+  /** 卡片上最多显示几条要点（不传则全显示） */
+  maxBullets?: number;
+}
+
+const { project, maxBullets } = Astro.props;
+const bullets = maxBullets ? project.bullets.slice(0, maxBullets) : project.bullets;
+
+/** 本地开发时提示"这里可以放图"，构建出来的正式站点不会出现这类提示 */
+const showPlaceholder = import.meta.env.DEV && !project.figure;
+---
+
+<article class="card">
+  <h3 class="card__title">
+    <a href={`/research/${project.id}`}>{project.title}</a>
+  </h3>
+
+  <p class="card__meta">
+    {project.lab && <span>{project.lab}</span>}
+    <span>{project.period}</span>
+    {project.role && <span>{project.role}</span>}
+  </p>
+
+  {
+    project.figure && (
+      <img
+        src={project.figure}
+        alt={project.figureCaption ?? project.title}
+        loading="lazy"
+        class="card__figure"
+      />
+    )
+  }
+
+  {
+    showPlaceholder && (
+      <p class="figure-placeholder">
+        Figure slot (dev only) — put an image in <code>public/figures/</code> and set{' '}
+        <code>figure</code> in <code>src/data/projects.ts</code>
+      </p>
+    )
+  }
+
+  <p class="card__body">{project.summary}</p>
+
+  <ul>
+    {bullets.map((b) => <li>{b}</li>)}
+  </ul>
+
+  <p class="card__more">
+    <a href={`/research/${project.id}`}>Details →</a>
+  </p>
+</article>

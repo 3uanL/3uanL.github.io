@@ -1,0 +1,25 @@
+---
+/** 板块容器：统一标题样式 + 可选右上角链接 */
+interface Props {
+  title: string;
+  id?: string;
+  /** 右上角的小链接，例如 { href: '/news', label: 'All news →' } */
+  action?: { href: string; label: string };
+  note?: string;
+}
+
+const { title, id, action, note } = Astro.props;
+---
+
+<section class="section" id={id}>
+  <h2 class="section__title">
+    {title}
+    {note && <small>{note}</small>}
+    {action && !note && (
+      <small>
+        <a href={action.href}>{action.label}</a>
+      </small>
+    )}
+  </h2>
+  <slot />
+</section>

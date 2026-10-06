@@ -1,0 +1,40 @@
+---
+import type { NewsItem } from '../data/news';
+
+interface Props {
+  items: NewsItem[];
+  /** 只显示前 N 条 */
+  limit?: number;
+}
+
+const { items, limit } = Astro.props;
+const shown = limit ? items.slice(0, limit) : items;
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** '2026-07' → 'Jul 2026'；'2026' → '2026' */
+function formatDate(value: string) {
+  const [y, m] = value.split('-');
+  if (!m) return y;
+  return `${MONTHS[Number(m) - 1] ?? m} ${y}`;
+}
+---
+
+<ul class="news">
+  {
+    shown.map((item) => (
+      <li>
+        <time datetime={item.date}>{formatDate(item.date)}</time>
+        <p>
+          {item.text}
+          {item.href && (
+            <>
+              {' '}
+              <a href={item.href} aria-label="Details">→</a>
+            </>
+          )}
+        </p>
+      </li>
+    ))
+  }
+</ul>

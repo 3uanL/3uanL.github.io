@@ -1,0 +1,30 @@
+---
+/** 顶部导航：左边站名，右边页面链接 + 主题切换 */
+import { nav, site } from '../config';
+import ThemeToggle from './ThemeToggle.astro';
+
+const current = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+function isCurrent(href: string) {
+  const clean = href.replace(/\/$/, '') || '/';
+  if (clean === '/') return current === '/';
+  return current === clean || current.startsWith(clean + '/');
+}
+---
+
+<header class="site-header" data-pagefind-ignore>
+  <div class="container container--wide site-header__inner">
+    <a class="site-title" href="/">{site.name}</a>
+
+    <nav class="site-nav" aria-label="Main">
+      {
+        nav.map((item) => (
+          <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+            {item.label}
+          </a>
+        ))
+      }
+      <ThemeToggle />
+    </nav>
+  </div>
+</header>

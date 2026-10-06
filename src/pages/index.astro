@@ -1,0 +1,92 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import Section from '../components/Section.astro';
+import NewsList from '../components/NewsList.astro';
+import PubList from '../components/PubList.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { news, newsOnHomepage } from '../data/news';
+import { publications } from '../data/publications';
+import { researchProjects, selectedProjects } from '../data/projects';
+import { honors } from '../data/honors';
+import { site, about } from '../config';
+
+/** 结构化数据：让 Google 知道这是一个研究者主页 */
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: site.name,
+  alternateName: site.chineseName,
+  email: `mailto:${site.email}`,
+  url: Astro.site?.href,
+  affiliation: {
+    '@type': 'CollegeOrUniversity',
+    name: 'Southern University of Science and Technology',
+  },
+  sameAs: [site.links.github, site.links.scholar, site.links.linkedin, site.links.orcid].filter(
+    Boolean,
+  ),
+  knowsAbout: [
+    'Wireless communications',
+    'Integrated sensing and communication',
+    'UAV networks',
+    'Semantic communication',
+    'Convex optimization',
+    'Physics-informed learning',
+  ],
+};
+---
+
+<BaseLayout title={site.name} titleSuffix={false}>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <div class="container">
+    <Hero />
+
+    <Section title="News" action={{ href: '/news', label: 'All news →' }}>
+      <NewsList items={news} limit={newsOnHomepage} />
+    </Section>
+
+    <Section title="Publications" action={{ href: '/publications', label: 'All publications →' }}>
+      <PubList items={publications} />
+    </Section>
+
+    <Section title="Research" action={{ href: '/research', label: 'All projects →' }}>
+      <div class="card-grid card-grid--2">
+        {researchProjects.map((project) => <ProjectCard project={project} maxBullets={2} />)}
+      </div>
+    </Section>
+
+    <Section title="Selected projects">
+      <div class="card-grid card-grid--2">
+        {selectedProjects.map((project) => <ProjectCard project={project} maxBullets={1} />)}
+      </div>
+    </Section>
+
+    <Section title="Honors & Awards">
+      <ul class="news">
+        {
+          honors.map((h) => (
+            <li>
+              <time>{h.year}</time>
+              <p>
+                {h.title}
+                {h.meta && <span> — {h.meta}</span>}
+              </p>
+            </li>
+          ))
+        }
+      </ul>
+    </Section>
+
+    <Section title="About">
+      {about.bio.map((paragraph) => <p>{paragraph}</p>)}
+      {about.hobbies && <p>{about.hobbies}</p>}
+      <p>
+        You can reach me at <a href={`mailto:${site.email}`}>{site.email}</a>
+        {site.location && <> · based in {site.location}</>}. More background is in my{' '}
+        <a href="/cv">CV</a>.
+      </p>
+    </Section>
+  </div>
+</BaseLayout>

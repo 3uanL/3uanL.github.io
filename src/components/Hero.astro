@@ -1,0 +1,79 @@
+---
+/**
+ * 首屏：照片（或占位）+ 名字 + 一句话方向 + 自我介绍 + 行动按钮。
+ *
+ * 换照片：把一张正方形照片命名为 portrait.jpg 放到 src/assets/ 下即可，
+ *        构建时自动检测并替换掉现在的字母占位圆。
+ */
+import { Image } from 'astro:assets';
+import { site } from '../config';
+
+const globbed = import.meta.glob<{ default: ImageMetadata }>('/src/assets/portrait.*', { eager: true });
+const portrait = Object.values(globbed)[0]?.default;
+
+const initials = site.name
+  .split(' ')
+  .map((w) => w[0])
+  .join('')
+  .slice(0, 2);
+
+/** 只显示填了链接的按钮，没填的自动隐藏 */
+const external = [
+  site.links.github && { href: site.links.github, label: 'GitHub' },
+  site.links.scholar && { href: site.links.scholar, label: 'Scholar' },
+  site.links.linkedin && { href: site.links.linkedin, label: 'LinkedIn' },
+  site.links.orcid && { href: site.links.orcid, label: 'ORCID' },
+].filter(Boolean) as { href: string; label: string }[];
+---
+
+<section class="hero">
+  {
+    portrait ? (
+      <Image
+        src={portrait}
+        alt={site.name}
+        class="hero__avatar"
+        widths={[160, 340]}
+        sizes="9.5rem"
+        loading="eager"
+      />
+    ) : (
+      <div class="hero__avatar" aria-hidden="true">
+        {initials}
+      </div>
+    )
+  }
+
+  <div>
+    <p class="hero__eyebrow">{site.tagline}</p>
+    <h1 class="hero__name">
+      {site.name}
+      {site.englishName && <span> ({site.englishName})</span>}
+    </h1>
+    <p class="hero__affiliation">
+      {site.affiliation}
+      <br />
+      {site.affiliationNote}
+    </p>
+    <p class="hero__intro">{site.intro}</p>
+
+    <div class="hero__actions">
+      <a class="btn btn--primary" href={site.links.cv}>CV (PDF)</a>
+      <a class="btn" href={`mailto:${site.email}`}>Email</a>
+      {
+        external.map((l) => (
+          <a class="btn" href={l.href} rel="me noopener">
+            {l.label}
+          </a>
+        ))
+      }
+      {
+        site.wechat && (
+          <span class="btn" title={site.wechat}>
+            WeChat: {site.wechat}
+          </span>
+        )
+      }
+    </div>
+  </div>
+</section>

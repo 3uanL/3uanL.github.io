@@ -1,0 +1,99 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { projects } from '../../data/projects';
+
+export async function getStaticPaths() {
+  return projects.map((project) => ({
+    params: { id: project.id },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+---
+
+<BaseLayout title={project.title} description={project.summary}>
+  <article class="container prose">
+    <p><a href="/research">← Research</a></p>
+
+    <h1>{project.title}</h1>
+
+    <p class="post-meta">
+      {project.lab && <span>{project.lab}</span>}
+      <span>{project.period}</span>
+      {project.role && <span>{project.role}</span>}
+      {project.advisors && project.advisors.length > 0 && (
+        <span>Advisor: {project.advisors.join(', ')}</span>
+      )}
+    </p>
+
+    <p><strong>{project.summary}</strong></p>
+
+    {
+      project.figure ? (
+        <figure>
+          <img src={project.figure} alt={project.figureCaption ?? project.title} />
+          {project.figureCaption && <figcaption>{project.figureCaption}</figcaption>}
+        </figure>
+      ) : (
+        import.meta.env.DEV && (
+          <p class="figure-placeholder">
+            Figure slot (dev only) — put an image in <code>public/figures/</code> and set{' '}
+            <code>figure: '/figures/your-figure.png'</code> for this project in{' '}
+            <code>src/data/projects.ts</code>
+            {project.figureCaption && (
+              <>
+                <br />
+                {project.figureCaption}
+              </>
+            )}
+          </p>
+        )
+      )
+    }
+
+    <h2>What I did</h2>
+    <ul>
+      {project.bullets.map((b) => <li>{b}</li>)}
+    </ul>
+
+    {
+      project.details && project.details.length > 0 && (
+        <>
+          <h2>More details</h2>
+          {project.details.map((p) => (
+            <p>{p}</p>
+          ))}
+        </>
+      )
+    }
+
+    {
+      project.tags && project.tags.length > 0 && (
+        <>
+          <h2>Topics</h2>
+          <p class="pub__links">
+            {project.tags.map((t) => (
+              <span class="tag tag--muted">{t}</span>
+            ))}
+          </p>
+        </>
+      )
+    }
+
+    {
+      project.links && project.links.length > 0 && (
+        <>
+          <h2>Links</h2>
+          <p class="pub__links">
+            {project.links.map((l) => (
+              <a class="btn" href={l.href}>
+                {l.label}
+              </a>
+            ))}
+          </p>
+        </>
+      )
+    }
+  </article>
+</BaseLayout>

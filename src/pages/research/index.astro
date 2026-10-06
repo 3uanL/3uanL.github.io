@@ -1,0 +1,33 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { researchProjects, selectedProjects } from '../../data/projects';
+---
+
+<BaseLayout
+  title="Research"
+  description="Research projects of Yuanhao Liu: UAV trajectory design, ISAC beamforming, physics-informed magnetic localization, and more."
+>
+  <div class="container container--wide">
+    <h1>Research</h1>
+    <p>
+      I work on the boundary between wireless systems and learning: making communication networks
+      aware of the physics around them, and making sensing and communication share the same
+      spectrum safely. Each project below has a detail page with figures, results and links.
+    </p>
+
+    <section class="section">
+      <h2 class="section__title">Research experience</h2>
+      <div class="card-grid card-grid--2">
+        {researchProjects.map((project) => <ProjectCard project={project} />)}
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section__title">Competitions & course projects</h2>
+      <div class="card-grid card-grid--2">
+        {selectedProjects.map((project) => <ProjectCard project={project} />)}
+      </div>
+    </section>
+  </div>
+</BaseLayout>

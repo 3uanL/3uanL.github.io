@@ -1,0 +1,23 @@
+---
+import { site, copyrightFrom } from '../config';
+
+const year = new Date().getFullYear();
+const yearLabel = year > copyrightFrom ? `${copyrightFrom}–${year}` : `${copyrightFrom}`;
+const lastUpdated = site.useBuildDate
+  ? new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' })
+  : null;
+---
+
+<footer class="site-footer" data-pagefind-ignore>
+  <div class="container container--wide site-footer__inner">
+    <div>
+      © {yearLabel} {site.name} ·
+      <a href={`mailto:${site.email}`}>{site.email}</a>
+    </div>
+    <div>
+      {site.links.github && <a href={site.links.github}>GitHub</a>}
+      {site.links.scholar && <> · <a href={site.links.scholar}>Scholar</a></>}
+      {lastUpdated && <span> · Last updated {lastUpdated}</span>}
+    </div>
+  </div>
+</footer>

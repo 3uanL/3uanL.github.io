@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import NewsList from '../components/NewsList.astro';
+import { news } from '../data/news';
+---
+
+<BaseLayout title="News" description="Recent updates from Yuanhao Liu: papers, awards and projects.">
+  <div class="container">
+    <h1>News</h1>
+    <p>Papers, awards, and project milestones, newest first.</p>
+    <NewsList items={news} />
+  </div>
+</BaseLayout>
