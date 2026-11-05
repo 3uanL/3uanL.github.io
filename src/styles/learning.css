@@ -1,11 +1,16 @@
 /* ==========================================================================
-   Learning Log：文档站式双栏阅读布局（左侧目录树 + 右侧正文）
+   Learning Log：文档站式三栏布局（左目录树 + 中正文 + 右本页目录）
    只在 Learning Log 的页面里引入，不影响其他页面。
    ========================================================================== */
 
+/* 文档页用更宽的容器，把屏宽用满 */
+.container.container--docs {
+  max-width: 82rem;
+}
+
 .docs {
   display: grid;
-  grid-template-columns: 15.5rem minmax(0, 1fr);
+  grid-template-columns: 15rem minmax(0, 1fr) 12.5rem;
   gap: 2.5rem;
   align-items: start;
 }
@@ -33,10 +38,10 @@
 .docs__home {
   display: block;
   font-family: var(--font-serif);
-  font-size: 0.95rem;
+  font-size: 0.98rem;
   font-weight: 600;
   color: var(--text);
-  padding: 0.2rem 0 0.7rem;
+  padding: 0.1rem 0 0.8rem;
 }
 
 .docs__home:hover {
@@ -44,49 +49,87 @@
   text-decoration: none;
 }
 
+/* 每个领域是一个 <details>：点标题折叠/展开 */
 .docs__group {
-  margin-bottom: 0.9rem;
+  border-top: 1px solid var(--border);
+}
+
+.docs__group:first-of-type {
+  border-top: 0;
 }
 
 .docs__domain {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  cursor: pointer;
+  list-style: none;
   color: var(--text);
   font-weight: 600;
   font-size: 0.88rem;
-  padding: 0.2rem 0.4rem;
+  padding: 0.5rem 0.35rem;
   border-radius: var(--radius-sm);
+  user-select: none;
+}
+
+.docs__domain::-webkit-details-marker {
+  display: none;
+}
+
+.docs__domain::after {
+  content: '＋';
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  font-weight: 400;
+}
+
+.docs__group[open] > .docs__domain::after {
+  content: '－';
 }
 
 .docs__domain:hover {
   background: var(--bg-soft);
-  text-decoration: none;
   color: var(--accent);
 }
 
 .docs__course {
-  margin: 0.15rem 0 0.15rem 0.35rem;
-  border-left: 1px solid var(--border);
-  padding-left: 0.5rem;
+  padding: 0 0 0.5rem 0.35rem;
 }
 
+.docs__overview,
 .docs__course-title {
   display: block;
   color: var(--text-muted);
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   padding: 0.12rem 0.35rem;
   border-radius: var(--radius-sm);
 }
 
+.docs__overview {
+  font-size: 0.78rem;
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.docs__overview:hover,
 .docs__course-title:hover {
   color: var(--text);
   background: var(--bg-soft);
   text-decoration: none;
 }
 
+.docs__course-block {
+  margin-top: 0.1rem;
+  border-left: 1px solid var(--border);
+  padding-left: 0.45rem;
+  margin-left: 0.1rem;
+}
+
 .docs__notes {
   list-style: none;
-  margin: 0.1rem 0 0.4rem;
-  padding: 0 0 0 0.35rem;
+  margin: 0.1rem 0 0.35rem;
+  padding: 0 0 0 0.3rem;
 }
 
 .docs__notes li {
@@ -96,9 +139,9 @@
 .docs__notes a {
   display: block;
   color: var(--text-muted);
-  font-size: 0.82rem;
-  line-height: 1.4;
-  padding: 0.15rem 0.35rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  padding: 0.12rem 0.3rem;
   border-radius: var(--radius-sm);
 }
 
@@ -108,19 +151,25 @@
   text-decoration: none;
 }
 
-/* 当前所在页 */
 .docs__notes a[aria-current='page'] {
   color: var(--accent);
   background: var(--accent-soft);
   font-weight: 600;
 }
 
-.docs__domain[aria-current='page'],
+.docs__overview[aria-current='page'],
 .docs__course-title[aria-current='page'] {
   color: var(--accent);
 }
 
-/* ---------- 右侧正文 ---------- */
+.docs__count {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  padding: 0.6rem 0.35rem;
+  margin: 0;
+}
+
+/* ---------- 中间正文 ---------- */
 .docs__content {
   min-width: 0;
 }
@@ -128,7 +177,7 @@
 .docs__breadcrumb {
   font-size: 0.82rem;
   color: var(--text-faint);
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.1rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
@@ -154,7 +203,15 @@
   border-bottom: 1px solid var(--border);
 }
 
-/* 上一页 / 下一页 */
+.docs__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  font-size: 0.82rem;
+  color: var(--text-faint);
+  margin-bottom: 1.6rem;
+}
+
 .docs__pager {
   display: flex;
   justify-content: space-between;
@@ -183,21 +240,54 @@
   letter-spacing: 0.05em;
 }
 
-/* 笔记页顶部信息 */
-.docs__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.7rem;
+/* ---------- 右侧本页目录 ---------- */
+.docs__toc {
+  position: sticky;
+  top: 4.5rem;
+  max-height: calc(100vh - 6rem);
+  overflow-y: auto;
   font-size: 0.82rem;
+  border-left: 1px solid var(--border);
+  padding-left: 1rem;
+}
+
+.docs__toc-title {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--text-faint);
-  margin-bottom: 1.6rem;
+  margin: 0 0 0.6rem;
+}
+
+.docs__toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.docs__toc li {
+  margin: 0 0 0.3rem;
+  line-height: 1.4;
+}
+
+.docs__toc a {
+  color: var(--text-muted);
+}
+
+.docs__toc a:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.docs__toc-h3 {
+  padding-left: 0.8rem;
+  font-size: 0.78rem;
 }
 
 /* ---------- 入口页（领域卡片） ---------- */
 .domain-grid {
   display: grid;
   gap: 1rem;
-  /* 4 个领域在宽屏下排成 2×2，窄屏自动变 1 列 */
   grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
 }
 
@@ -254,8 +344,26 @@
   color: var(--text-faint);
 }
 
-/* ---------- 移动端：侧栏收到顶部 ---------- */
-@media (max-width: 60rem) {
+/* ---------- 窄屏：收起成单栏 ---------- */
+@media (max-width: 80rem) {
+  .docs {
+    grid-template-columns: 14rem minmax(0, 1fr) 11rem;
+    gap: 1.8rem;
+  }
+}
+
+@media (max-width: 64rem) {
+  .docs {
+    grid-template-columns: 13.5rem minmax(0, 1fr);
+  }
+
+  /* 屏不够宽就不显示右侧本页目录 */
+  .docs__toc {
+    display: none;
+  }
+}
+
+@media (max-width: 48rem) {
   .docs {
     grid-template-columns: minmax(0, 1fr);
     gap: 1.5rem;

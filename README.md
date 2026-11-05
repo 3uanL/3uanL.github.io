@@ -3,7 +3,7 @@
 一个静态学术个人主页：Astro 7 构建，Markdown 写作，构建时生成全文搜索索引，可以直接托管在 GitHub Pages 上。
 
 - 线上地址（部署后）：https://3uanL.github.io
-- 页面：首页（News / Research / Learning Log / Honors / Service）、Publications、Research（每个项目一个详情页）、**Learning Log**（文档站式学习笔记，三层目录）、Blog、CV、Gallery、Search、404
+- 页面：首页（News / Research / Learning Log / Honors / Service）、Publications、Research（**列表页，没有详情页**，有论文的直接链 DOI）、**Learning Log**（文档站式学习笔记，三栏 + 三层目录）、Blog、CV、Gallery、Search、404
 - 特性：**英文站**；浅色/深色主题（跟随系统 + 手动切换）；Pagefind 全文搜索；简历 PDF 下载；论文 PDF 下载位；项目配图；相册位；自动 sitemap.xml / robots.txt；零第三方字体、零追踪脚本（除非你自己填统计 ID）
 
 ---
@@ -44,7 +44,7 @@ npm run preview    # 预览 dist/ 的构建结果（搜索功能只有构建后�
 | 名字、首屏那句话、邮箱、GitHub/Bilibili/Scholar 链接、微信、访问统计 | [`src/config.ts`](src/config.ts) |
 | 论文列表（标题、作者、期刊、状态、DOI/PDF 链接） | [`src/data/publications.ts`](src/data/publications.ts) |
 | 首页 News 动态（现在只留 2 条） | [`src/data/news.ts`](src/data/news.ts) |
-| 科研项目（首页哪些卡片带图、`/research/xxx` 详情页） | [`src/data/projects.ts`](src/data/projects.ts) |
+| 科研项目（`featured: true` 的会出现在首页；配图、一句话概括） | [`src/data/projects.ts`](src/data/projects.ts) |
 | 荣誉、学术服务、教育背景、技能 | [`src/data/honors.ts`](src/data/honors.ts) |
 | Learning Log 的领域与课程名 | [`src/data/learning.ts`](src/data/learning.ts) |
 | Learning Log 的笔记正文 | `src/content/learning/<领域>/<课程>/*.md` |
@@ -122,7 +122,7 @@ tags: [optimization, UAV]
 ### 3.2 Learning Log（学习记录）
 
 Learning Log 是"结构化"的笔记：领域 → 课程 → 单篇笔记，网址就是目录结构。
-左侧目录树和"上一页 / 下一页"都是自动生成的，你只需要写 Markdown。
+版面是三栏：左边是可折叠的目录树（只自动展开你当前所在的领域），中间是正文，右边是本页小节目录；底部的"上一页 / 下一页"也是自动生成的。你只需要写 Markdown。
 
 **加一篇笔记**（最常见）：
 
@@ -152,7 +152,7 @@ tags: [rl, mdp]
 
 ## 4. 换头像 / 加相册 / 放论文 PDF
 
-**头像**：把一张正方形照片命名为 `portrait.jpg` 放进 `src/assets/`，重新构建即可；现在显示的是 "YL" 字母占位圆，检测到照片会自动替换。
+**头像**：`src/assets/portrait.jpg`（316×316，已放好）。想换就同名覆盖，构建时自动生成 160w/316w 两档。删掉这个文件会退回 "YL" 字母占位圆。
 
 **相册**：把照片放进 `src/assets/gallery/`（jpg/png/webp/avif），文件名会变成说明文字，例如 `shenzhen-bay-sunset.jpg` → "shenzhen bay sunset"。单张建议 ≤ 1 MB。
 
@@ -164,7 +164,7 @@ links: { pdf: '/files/uav-trajectory.pdf', doi: 'https://doi.org/10.xxxx/xxxxx' 
 
 条目上就会出现 PDF / DOI 按钮；没填的自动隐藏。
 
-**项目配图**：图片放进 `public/figures/`，在 [`src/data/projects.ts`](src/data/projects.ts) 里写 `figure: '/figures/xxx.png'`。配图会出现在首页卡片和详情页；不填就没有图（不会出现开发提示——那种提示只在 `npm run dev` 下可见）。
+**项目配图**：图片放进 `public/figures/`，在 [`src/data/projects.ts`](src/data/projects.ts) 里写 `figure: '/figures/xxx.png'`。卡片里是一张 200px 宽、4:3 白底框、`contain` 不裁切的缩略图（宽图不会被切掉两侧）。不填就没有图，卡片自动变成整行文字。
 
 **简历 PDF**：现在这份 `public/cv/Yuanhao_Liu_CV.pdf` 是从你的 `CV_YuanhaoLiu.docx` 转出来的，**并且已经删掉了手机号**（你要求不公开电话）。更新简历后有两种做法：
 - 直接把你导出的新 PDF 覆盖 `public/cv/Yuanhao_Liu_CV.pdf`（记得自己检查里面有没有电话/住址）；
@@ -221,7 +221,7 @@ export const analytics = {
 │   ├── content.config.ts   博客与笔记的字段校验规则（一般不用动）
 │   ├── components/         Header、Hero、卡片、论文列表等组件
 │   ├── layouts/            页面外壳（<head>、主题初始化、页头页脚）
-│   ├── pages/              每个文件 = 一个网址
+│   ├── pages/              每个文件 = 一个网址（research 只有列表页，learning 是三层的动态路由）
 │   ├── styles/global.css   ★ 配色与排版
 │   └── styles/learning.css  Learning Log 的双栏阅读样式
 ├── public/                 原样拷贝的文件：favicon、cv/、files/、figures/

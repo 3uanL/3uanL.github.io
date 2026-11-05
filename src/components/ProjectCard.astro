@@ -1,19 +1,23 @@
 ---
+/**
+ * 项目/论文条目（横向精简版）：
+ *   左：配图（200px 宽，4:3 白底，contain 不裁切）
+ *   右：标题 + 一句话 + 作者/venue（有 DOI 时整块可点）
+ * 没有配图的项目会自动变成单栏文字。
+ */
 import type { Project } from '../data/projects';
 import { publicationForProject } from '../data/publications';
 import { site } from '../config';
 
 interface Props {
   project: Project;
-  /** 卡片上最多显示几条要点（不传则全显示） */
-  maxBullets?: number;
 }
 
-const { project, maxBullets } = Astro.props;
-const bullets = maxBullets ? project.bullets.slice(0, maxBullets) : project.bullets;
-
-/** 关联的论文（首页把项目与论文合并展示） */
+const { project } = Astro.props;
 const pub = publicationForProject(project.id);
+const doi = pub?.links?.doi;
+const href = doi ?? undefined;
+
 const STATUS_LABEL: Record<string, string> = {
   published: 'Published',
   accepted: 'Accepted',
@@ -23,105 +27,165 @@ const STATUS_LABEL: Record<string, string> = {
   'in-prep': 'In preparation',
 };
 
-/** 本地开发时提示"这里可以放图"，构建出来的正式站点不会出现 */
-const showPlaceholder = import.meta.env.DEV && !project.figure;
-
 const authorParts = pub ? pub.authors.split(site.name) : [];
 ---
 
-<article class="card">
+<article class="proj">
   {
     project.figure && (
-      <img
-        src={project.figure}
-        alt={project.figureCaption ?? project.title}
-        loading="lazy"
-        class="card__figure"
-      />
+      <div class="proj__thumb">
+        {href ? (
+          <a href={href} aria-label={project.title}>
+            <img
+              src={project.figure}
+              alt={project.figureCaption ?? project.title}
+              loading="lazy"
+            />
+          </a>
+        ) : (
+          <img src={project.figure} alt={project.figureCaption ?? project.title} loading="lazy" />
+        )}
+      </div>
     )
   }
 
-  {
-    showPlaceholder && (
-      <p class="figure-placeholder">
-        Figure slot (dev only) — put an image in <code>public/figures/</code> and set{' '}
-        <code>figure</code> in <code>src/data/projects.ts</code>
-      </p>
-    )
-  }
+  <div class="proj__body">
+    <h3 class="proj__title">
+      {href ? <a href={href}>{project.title}</a> : project.title}
+    </h3>
 
-  <h3 class="card__title">
-    <a href={`/research/${project.id}`}>{project.title}</a>
-  </h3>
+    <p class="proj__summary">{project.summary}</p>
 
-  <p class="card__meta">
-    {project.lab && <span>{project.lab}</span>}
-    <span>{project.period}</span>
-    {project.role && <span>{project.role}</span>}
-  </p>
-
-  <p class="card__body">{project.summary}</p>
-
-  <ul>
-    {bullets.map((b) => <li>{b}</li>)}
-  </ul>
-
-  {
-    pub && (
-      <div class="card__pub">
-        <p class="card__pub-authors">
-          {authorParts.map((part, idx) => (
-            <>
-              {part}
-              {idx < authorParts.length - 1 && <strong>{site.name}</strong>}
-            </>
-          ))}
-        </p>
-        <p class="card__pub-venue">
+    {
+      pub ? (
+        <p class="proj__pub">
+          <span class="proj__authors">
+            {authorParts.map((part, idx) => (
+              <>
+                {part}
+                {idx < authorParts.length - 1 && <strong>{site.name}</strong>}
+              </>
+            ))}
+          </span>
+          <br />
           <em>{pub.venue}</em>, {pub.year}.{' '}
           <span class={pub.status === 'in-prep' ? 'tag tag--muted' : 'tag'}>
             {STATUS_LABEL[pub.status]}
           </span>
           {pub.note && <span class="tag tag--muted">{pub.note}</span>}
-          {pub.links?.doi && (
+          {doi && (
             <>
               {' '}
-              <a href={pub.links.doi} class="card__doi">DOI</a>
+              <a class="proj__doi" href={doi}>
+                DOI
+              </a>
             </>
           )}
         </p>
-      </div>
-    )
-  }
-
-  <p class="card__more">
-    <a href={`/research/${project.id}`}>Details →</a>
-  </p>
+      ) : (
+        <p class="proj__pub">
+          {project.lab && <>{project.lab} · </>}
+          {project.period}
+          {project.role && <> · {project.role}</>}
+        </p>
+      )
+    }
+  </div>
 </article>
 
 <style>
-  .card__pub {
-    margin-top: 0.4rem;
-    padding-top: 0.7rem;
-    border-top: 1px dashed var(--border);
+  .proj {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+    padding: 1.35rem 0;
+    border-bottom: 1px solid var(--border);
   }
 
-  .card__pub-authors {
-    font-size: 0.84rem;
-    color: var(--text-muted);
-    margin: 0 0 0.25rem;
-    line-height: 1.5;
+  .proj:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
   }
 
-  .card__pub-venue {
-    font-size: 0.84rem;
+  .proj:has(.proj__thumb) {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+
+  .proj__thumb {
+    aspect-ratio: 4 / 3;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+  }
+
+  .proj__thumb a {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .proj__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 4px;
+  }
+
+  .proj__title {
+    font-family: var(--font-sans);
+    font-size: 1.02rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0 0 0.4rem;
+  }
+
+  .proj__title a {
+    color: var(--text);
+  }
+
+  .proj__title a:hover {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .proj__summary {
+    font-size: 0.93rem;
     color: var(--text-muted);
-    margin: 0;
+    margin: 0 0 0.55rem;
     line-height: 1.6;
   }
 
-  .card__doi {
+  .proj__pub {
+    font-size: 0.82rem;
+    color: var(--text-faint);
+    margin: 0;
+    line-height: 1.7;
+  }
+
+  .proj__authors strong {
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .proj__doi {
     white-space: nowrap;
     font-weight: 600;
+  }
+
+  /* 没有配图的项目：整行给文字 */
+  .proj:not(:has(.proj__thumb)) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  @media (max-width: 40rem) {
+    .proj,
+    .proj:has(.proj__thumb) {
+      grid-template-columns: 9rem minmax(0, 1fr);
+      gap: 1rem;
+    }
   }
 </style>

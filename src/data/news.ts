@@ -25,7 +25,7 @@ export const news: NewsItem[] = [
   {
     date: '2025-09',
     text: 'National First Prize, China Undergraduate Mathematical Contest in Modeling (CUMCM 2025).',
-    href: '/research/cumcm-2025',
+    href: '/research',
   },
 ];
 

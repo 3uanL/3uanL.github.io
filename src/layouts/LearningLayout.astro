@@ -1,7 +1,7 @@
 ---
 /**
- * Learning Log 的阅读布局：左侧目录树（全部领域/课程/笔记）+ 右侧正文。
- * 只有 Learning Log 的页面用它，其他页面用 BaseLayout。
+ * Learning Log 的阅读布局：三栏（左侧目录树 + 中间正文 + 右侧本页目录）。
+ * 目录树按领域折叠，只自动展开当前所在的领域。
  */
 import { getCollection } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
@@ -13,22 +13,26 @@ interface PagerLink {
   title: string;
 }
 
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
 interface Props {
   title: string;
   description?: string;
-  /** 当前所在领域 slug（用于高亮） */
   domain?: string;
-  /** 当前所在课程 slug */
   course?: string;
-  /** 当前笔记的完整 id，例如 ai/reinforcement-learning/mdp */
   noteId?: string;
-  /** 面包屑最后一段文字 */
   crumb?: string;
   prev?: PagerLink;
   next?: PagerLink;
+  /** 本页的小节目录（由 render() 返回的 headings） */
+  headings?: Heading[];
 }
 
-const { title, description, domain, course, noteId, crumb, prev, next } = Astro.props;
+const { title, description, domain, course, noteId, crumb, prev, next, headings = [] } = Astro.props;
 
 const notes = await getCollection('learning', ({ data }) => !data.draft);
 
@@ -46,51 +50,66 @@ const tree = domains.map((d) => ({
 }));
 
 const here = Astro.url.pathname.replace(/\/$/, '');
-const at = (path: string) => (here === path.replace(/\/$/, '') ? 'page' : undefined);
+const at = (path: string) => (here === path.replace(/\/$/, '') ? ('page' as const) : undefined);
 const total = notes.length;
+
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 ---
 
-<BaseLayout title={title} description={description ?? 'A learning log: notes on papers, math, communications and AI.'}>
-  <div class="container container--wide">
+<BaseLayout
+  title={title}
+  description={description ?? 'A learning log: notes on papers, math, communications and AI.'}
+>
+  <div class="container container--docs">
     <div class="docs">
       <aside class="docs__sidebar" aria-label="Learning Log contents">
         <a class="docs__home" href="/learning">Learning Log</a>
 
         {
-          tree.map((d) => (
-            <div class="docs__group">
-              <a class="docs__domain" href={`/learning/${d.slug}`} aria-current={at(`/learning/${d.slug}`) as any}>
-                {d.title}
-              </a>
-              {d.courses.map((c) => (
+          tree.map((d) => {
+            const isCurrent = d.slug === domain;
+            return (
+              <details class="docs__group" open={isCurrent}>
+                <summary class="docs__domain">{d.title}</summary>
                 <div class="docs__course">
                   <a
-                    class="docs__course-title"
-                    href={`/learning/${d.slug}/${c.slug}`}
-                    aria-current={at(`/learning/${d.slug}/${c.slug}`) as any}
+                    class="docs__overview"
+                    href={`/learning/${d.slug}`}
+                    aria-current={at(`/learning/${d.slug}`)}
                   >
-                    {c.title}
+                    Overview
                   </a>
-                  {c.notes.length > 0 && (
-                    <ul class="docs__notes">
-                      {c.notes.map((n) => (
-                        <li>
-                          <a
-                            href={`/learning/${d.slug}/${c.slug}/${n.id.split('/').slice(2).join('/')}`}
-                            aria-current={noteId === n.id ? ('page' as any) : undefined}
-                          >
-                            {n.data.title}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  {d.courses.map((c) => (
+                    <div class="docs__course-block">
+                      <a
+                        class="docs__course-title"
+                        href={`/learning/${d.slug}/${c.slug}`}
+                        aria-current={at(`/learning/${d.slug}/${c.slug}`)}
+                      >
+                        {c.title}
+                      </a>
+                      {c.notes.length > 0 && (
+                        <ul class="docs__notes">
+                          {c.notes.map((n) => (
+                            <li>
+                              <a
+                                href={`/learning/${d.slug}/${c.slug}/${n.id.split('/').slice(2).join('/')}`}
+                                aria-current={noteId === n.id ? 'page' : undefined}
+                              >
+                                {n.data.title}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          ))
+              </details>
+            );
+          })
         }
-        <p style="font-size:0.75rem;color:var(--text-faint);padding:0.4rem">
+        <p class="docs__count">
           {total} note{total === 1 ? '' : 's'} so far
         </p>
       </aside>
@@ -98,34 +117,38 @@ const total = notes.length;
       <div class="docs__content">
         <nav class="docs__breadcrumb" aria-label="Breadcrumb">
           <a href="/learning">Learning Log</a>
-          {domain && (
-            <>
-              <span>/</span>
-              <a href={`/learning/${domain}`}>{domains.find((d) => d.slug === domain)?.title ?? domain}</a>
-            </>
-          )}
-          {course && (
-            <>
-              <span>/</span>
-              <a href={`/learning/${domain}/${course}`}>
-                {coursesOf(domain!).find((c) => c.slug === course)?.title ?? course}
-              </a>
-            </>
-          )}
-          {crumb && (
-            <>
-              <span>/</span>
-              <span style="color:var(--text-muted)">{crumb}</span>
-            </>
-          )}
+          {
+            domain && (
+              <>
+                <span>/</span>
+                <a href={`/learning/${domain}`}>
+                  {domains.find((d) => d.slug === domain)?.title ?? domain}
+                </a>
+              </>
+            )
+          }
+          {
+            course && (
+              <>
+                <span>/</span>
+                <a href={`/learning/${domain}/${course}`}>
+                  {coursesOf(domain!).find((c) => c.slug === course)?.title ?? course}
+                </a>
+              </>
+            )
+          }
+          {
+            crumb && (
+              <>
+                <span>/</span>
+                <span style="color:var(--text-muted)">{crumb}</span>
+              </>
+            )
+          }
         </nav>
 
         <h1 class="docs__title">{title}</h1>
-        {
-          description && (
-            <p class="docs__lede">{description}</p>
-          )
-        }
+        {description && <p class="docs__lede">{description}</p>}
 
         <slot />
 
@@ -150,6 +173,23 @@ const total = notes.length;
           )
         }
       </div>
+
+      <aside class="docs__toc" aria-label="On this page">
+        {
+          toc.length > 0 && (
+            <>
+              <p class="docs__toc-title">On this page</p>
+              <ul>
+                {toc.map((h) => (
+                  <li class={`docs__toc-h${h.depth}`}>
+                    <a href={`#${h.slug}`}>{h.text}</a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )
+        }
+      </aside>
     </div>
   </div>
 </BaseLayout>

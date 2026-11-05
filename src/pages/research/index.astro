@@ -10,14 +10,13 @@ import { projects } from '../../data/projects';
 >
   <div class="container">
     <h1>Research</h1>
-    <p style="color:var(--text-muted)">
-      I work on the boundary between wireless systems and learning: making communication networks
-      aware of the physics around them, and making sensing and communication share the same spectrum
-      safely. Every entry below has a detail page; the ones that turned into papers show the
-      publication line directly.
+    <p style="color:var(--text-muted);margin-bottom:2.5rem">
+      Wireless systems and learning, mostly: making communication networks aware of the physics
+      around them, and letting sensing and communication share one spectrum safely. Entries that
+      became papers link straight to the paper.
     </p>
 
-    <div class="card-grid" style="margin-top:2rem">
+    <div>
       {projects.map((project) => <ProjectCard project={project} />)}
     </div>
   </div>

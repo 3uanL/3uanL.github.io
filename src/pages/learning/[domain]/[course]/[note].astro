@@ -33,7 +33,7 @@ export async function getStaticPaths() {
 
 const { note, prev, next } = Astro.props;
 const [domain, course] = note.id.split('/');
-const { Content } = await render(note);
+const { Content, headings } = await render(note);
 ---
 
 <LearningLayout
@@ -45,6 +45,7 @@ const { Content } = await render(note);
   crumb={note.data.title}
   prev={prev}
   next={next}
+  headings={headings}
 >
   <div class="docs__meta">
     {note.data.updated && (
