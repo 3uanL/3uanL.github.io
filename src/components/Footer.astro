@@ -16,7 +16,9 @@ const lastUpdated = site.useBuildDate
     </div>
     <div>
       {site.links.github && <a href={site.links.github}>GitHub</a>}
+      {site.links.bilibili && <> · <a href={site.links.bilibili}>Bilibili</a></>}
       {site.links.scholar && <> · <a href={site.links.scholar}>Scholar</a></>}
+      <> · <a href="/search">Search</a></>
       {lastUpdated && <span> · Last updated {lastUpdated}</span>}
     </div>
   </div>

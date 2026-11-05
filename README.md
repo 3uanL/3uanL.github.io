@@ -3,8 +3,8 @@
 一个静态学术个人主页：Astro 7 构建，Markdown 写作，构建时生成全文搜索索引，可以直接托管在 GitHub Pages 上。
 
 - 线上地址（部署后）：https://3uanL.github.io
-- 页面：首页（News / Publications / Research / Selected projects / Honors / About）、Publications、Research（含每个项目的详情页）、Blog、CV、Gallery、Search、404
-- 特性：中英不重要——**英文站**；浅色/深色主题（跟随系统 + 手动切换）；Pagefind 全文搜索；简历 PDF 下载；论文 PDF 下载位；相册位；自动 sitemap.xml / robots.txt；零第三方字体、零追踪脚本（除非你自己填统计 ID）
+- 页面：首页（News / Research / Learning Log / Honors / Service）、Publications、Research（每个项目一个详情页）、**Learning Log**（文档站式学习笔记，三层目录）、Blog、CV、Gallery、Search、404
+- 特性：**英文站**；浅色/深色主题（跟随系统 + 手动切换）；Pagefind 全文搜索；简历 PDF 下载；论文 PDF 下载位；项目配图；相册位；自动 sitemap.xml / robots.txt；零第三方字体、零追踪脚本（除非你自己填统计 ID）
 
 ---
 
@@ -41,14 +41,17 @@ npm run preview    # 预览 dist/ 的构建结果（搜索功能只有构建后�
 
 | 想改什么 | 改哪个文件 |
 | --- | --- |
-| 名字、一句话研究方向、邮箱、GitHub/Scholar 链接、微信、访问统计 | [`src/config.ts`](src/config.ts) |
-| 论文列表（标题、作者、期刊、状态、PDF/DOI 链接） | [`src/data/publications.ts`](src/data/publications.ts) |
-| 首页 News 动态 | [`src/data/news.ts`](src/data/news.ts) |
-| 科研经历 / 竞赛项目（首页卡片 + `/research/xxx` 详情页） | [`src/data/projects.ts`](src/data/projects.ts) |
-| 荣誉、教育背景、技能 | [`src/data/honors.ts`](src/data/honors.ts) |
+| 名字、首屏那句话、邮箱、GitHub/Bilibili/Scholar 链接、微信、访问统计 | [`src/config.ts`](src/config.ts) |
+| 论文列表（标题、作者、期刊、状态、DOI/PDF 链接） | [`src/data/publications.ts`](src/data/publications.ts) |
+| 首页 News 动态（现在只留 2 条） | [`src/data/news.ts`](src/data/news.ts) |
+| 科研项目（首页哪些卡片带图、`/research/xxx` 详情页） | [`src/data/projects.ts`](src/data/projects.ts) |
+| 荣誉、学术服务、教育背景、技能 | [`src/data/honors.ts`](src/data/honors.ts) |
+| Learning Log 的领域与课程名 | [`src/data/learning.ts`](src/data/learning.ts) |
+| Learning Log 的笔记正文 | `src/content/learning/<领域>/<课程>/*.md` |
 | 博客文章 | `src/content/blog/*.md` |
 | 简历 PDF | `public/cv/Yuanhao_Liu_CV.pdf` |
 | 论文 / 报告 PDF | `public/files/` |
+| 项目配图 | `public/figures/` |
 | 头像 | `src/assets/portrait.jpg` |
 | 相册照片 | `src/assets/gallery/` |
 | 配色、字号、栏宽 | [`src/styles/global.css`](src/styles/global.css) 顶部那一组 CSS 变量 |
@@ -76,7 +79,9 @@ export const site = {
 
 ---
 
-## 3. 怎么写一篇新文章
+## 3. 写内容（博客 / Learning Log）
+
+### 3.1 博客文章
 
 1. 在 `src/content/blog/` 下新建一个 `.md` 文件，文件名就是网址：`uav-trajectory-notes.md` → `/blog/uav-trajectory-notes/`。
 2. 文件开头写这一段（frontmatter）：
@@ -113,6 +118,35 @@ tags: [optimization, UAV]
 `src/content/blog/example-post.md` 是一个可以直接复制改写的模板（它是 `draft: true`，所以不会出现在网站上）。
 
 **写作建议**（真的会让主页更有说服力）：一篇笔记只讲清一件小事——「我踩了什么坑、怎么想明白的」。比如「Lyapunov 优化第一眼看不懂的三个符号」「FAT-MPC 为什么要在滚动时域上重解」——这类内容比综述式长文更容易被导师读懂，也更容易长期坚持。
+
+### 3.2 Learning Log（学习记录）
+
+Learning Log 是"结构化"的笔记：领域 → 课程 → 单篇笔记，网址就是目录结构。
+左侧目录树和"上一页 / 下一页"都是自动生成的，你只需要写 Markdown。
+
+**加一篇笔记**（最常见）：
+
+1. 找到对应目录，例如强化学习：`src/content/learning/ai/reinforcement-learning/`
+2. 新建 `mdp-basics.md`，开头写：
+
+```md
+---
+title: 马尔可夫决策过程到底在定义什么
+description: 一句话摘要，会出现在列表里
+order: 1
+tags: [rl, mdp]
+---
+
+正文……
+```
+
+3. 保存 → `npm run dev` 里立刻出现在 `/learning/ai/reinforcement-learning/mdp-basics`，同时进左侧目录树和搜索索引。
+
+**加一门新课**：在 [`src/data/learning.ts`](src/data/learning.ts) 的 `courses` 里加一条（`domain` 用已有的四个之一，`slug` 会成为网址的一段），再建同名目录写 md 即可。
+**加一个新领域**：在同一文件 `domains` 里加一条，然后建 `src/content/learning/<新领域>/` 目录。
+
+**注意**：`slug` 用英文小写和减号；改成中文会让网址变成一长串百分号编码。
+目前里面有两篇示例笔记（「How I read a paper」「Reading a 3GPP specification without drowning」），是我按通用方法论写的脚手架 —— **换成你自己的话，或者直接删掉**。
 
 ---
 
@@ -182,11 +216,14 @@ export const analytics = {
 │   ├── config.ts           ★ 姓名、方向、邮箱、链接、统计
 │   ├── data/               ★ 论文 / 动态 / 项目 / 荣誉 / 技能
 │   ├── content/blog/       ★ 博客 Markdown
-│   ├── content.config.ts   博客字段校验规则（一般不用动）
+│   ├── content/learning/   ★ Learning Log 笔记 Markdown（领域/课程/笔记.md）
+│   ├── data/learning.ts    ★ Learning Log 的领域与课程名
+│   ├── content.config.ts   博客与笔记的字段校验规则（一般不用动）
 │   ├── components/         Header、Hero、卡片、论文列表等组件
 │   ├── layouts/            页面外壳（<head>、主题初始化、页头页脚）
 │   ├── pages/              每个文件 = 一个网址
-│   └── styles/global.css   ★ 配色与排版
+│   ├── styles/global.css   ★ 配色与排版
+│   └── styles/learning.css  Learning Log 的双栏阅读样式
 ├── public/                 原样拷贝的文件：favicon、cv/、files/、figures/
 └── .github/workflows/      推送到 main 时自动构建部署
 ```

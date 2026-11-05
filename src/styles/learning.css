@@ -1,0 +1,292 @@
+/* ==========================================================================
+   Learning Log：文档站式双栏阅读布局（左侧目录树 + 右侧正文）
+   只在 Learning Log 的页面里引入，不影响其他页面。
+   ========================================================================== */
+
+.docs {
+  display: grid;
+  grid-template-columns: 15.5rem minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+/* ---------- 左侧目录树 ---------- */
+.docs__sidebar {
+  position: sticky;
+  top: 4.5rem;
+  max-height: calc(100vh - 6rem);
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  font-size: 0.9rem;
+  border-right: 1px solid var(--border);
+}
+
+.docs__sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.docs__sidebar::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+
+.docs__home {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  padding: 0.2rem 0 0.7rem;
+}
+
+.docs__home:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.docs__group {
+  margin-bottom: 0.9rem;
+}
+
+.docs__domain {
+  display: block;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--radius-sm);
+}
+
+.docs__domain:hover {
+  background: var(--bg-soft);
+  text-decoration: none;
+  color: var(--accent);
+}
+
+.docs__course {
+  margin: 0.15rem 0 0.15rem 0.35rem;
+  border-left: 1px solid var(--border);
+  padding-left: 0.5rem;
+}
+
+.docs__course-title {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  padding: 0.12rem 0.35rem;
+  border-radius: var(--radius-sm);
+}
+
+.docs__course-title:hover {
+  color: var(--text);
+  background: var(--bg-soft);
+  text-decoration: none;
+}
+
+.docs__notes {
+  list-style: none;
+  margin: 0.1rem 0 0.4rem;
+  padding: 0 0 0 0.35rem;
+}
+
+.docs__notes li {
+  margin: 0;
+}
+
+.docs__notes a {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  padding: 0.15rem 0.35rem;
+  border-radius: var(--radius-sm);
+}
+
+.docs__notes a:hover {
+  color: var(--text);
+  background: var(--bg-soft);
+  text-decoration: none;
+}
+
+/* 当前所在页 */
+.docs__notes a[aria-current='page'] {
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+
+.docs__domain[aria-current='page'],
+.docs__course-title[aria-current='page'] {
+  color: var(--accent);
+}
+
+/* ---------- 右侧正文 ---------- */
+.docs__content {
+  min-width: 0;
+}
+
+.docs__breadcrumb {
+  font-size: 0.82rem;
+  color: var(--text-faint);
+  margin-bottom: 1.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.docs__breadcrumb a {
+  color: var(--text-muted);
+}
+
+.docs__breadcrumb span {
+  color: var(--border-strong);
+}
+
+.docs__title {
+  margin-bottom: 0.5rem;
+}
+
+.docs__lede {
+  color: var(--text-muted);
+  font-size: 1.02rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* 上一页 / 下一页 */
+.docs__pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.docs__pager a {
+  display: block;
+  max-width: 46%;
+}
+
+.docs__pager-next {
+  text-align: right;
+  margin-left: auto;
+}
+
+.docs__pager-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* 笔记页顶部信息 */
+.docs__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  font-size: 0.82rem;
+  color: var(--text-faint);
+  margin-bottom: 1.6rem;
+}
+
+/* ---------- 入口页（领域卡片） ---------- */
+.domain-grid {
+  display: grid;
+  gap: 1rem;
+  /* 4 个领域在宽屏下排成 2×2，窄屏自动变 1 列 */
+  grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
+}
+
+.domain-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.domain-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow);
+}
+
+.domain-card h2 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.domain-card h2 a {
+  color: var(--text);
+}
+
+.domain-card h2 a:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.domain-card p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.domain-card ul {
+  margin: 0.2rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.domain-card li {
+  margin-bottom: 0.15rem;
+}
+
+.domain-card__count {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--text-faint);
+}
+
+/* ---------- 移动端：侧栏收到顶部 ---------- */
+@media (max-width: 60rem) {
+  .docs {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  /* 手机上先读正文，目录树放到下面 */
+  .docs__content {
+    order: 1;
+  }
+
+  .docs__sidebar {
+    order: 2;
+    position: static;
+    max-height: none;
+    border-right: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.8rem 1rem;
+    background: var(--bg-soft);
+    margin-top: 1rem;
+  }
+
+  .docs__pager {
+    flex-direction: column;
+  }
+
+  .docs__pager a {
+    max-width: 100%;
+  }
+
+  .docs__pager-next {
+    text-align: left;
+  }
+}

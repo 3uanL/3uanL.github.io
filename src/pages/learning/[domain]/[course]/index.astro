@@ -1,0 +1,53 @@
+---
+import LearningLayout from '../../../../layouts/LearningLayout.astro';
+import { getCollection } from 'astro:content';
+import { findDomain, courses } from '../../../../data/learning';
+
+export async function getStaticPaths() {
+  return courses.map((c) => ({
+    params: { domain: c.domain, course: c.slug },
+    props: { course: c, domain: findDomain(c.domain) },
+  }));
+}
+
+const { course, domain } = Astro.props;
+const notes = (await getCollection('learning', ({ data }) => !data.draft))
+  .filter((n) => n.id.startsWith(`${course.domain}/${course.slug}/`))
+  .sort((a, b) => a.data.order - b.data.order || a.data.title.localeCompare(b.data.title));
+---
+
+<LearningLayout
+  title={course.title}
+  description={course.blurb}
+  domain={course.domain}
+  course={course.slug}
+>
+  <p style="color:var(--text-muted)">{course.blurb}</p>
+
+  {
+    notes.length === 0 ? (
+      <div class="empty" style="margin-top:1.5rem">
+        <h3>No notes here yet</h3>
+        <p style="margin-bottom:0">
+          Add a Markdown file to <code>src/content/learning/{course.domain}/{course.slug}/</code> and
+          it shows up here (and in the sidebar).
+        </p>
+      </div>
+    ) : (
+      <ul style="margin-top:1.5rem">
+        {notes.map((n) => (
+          <li style="margin-bottom:0.9rem">
+            <a href={`/learning/${course.domain}/${course.slug}/${n.id.split('/').slice(2).join('/')}`}>
+              {n.data.title}
+            </a>
+            {n.data.description && (
+              <p style="margin:0.15rem 0 0;font-size:0.9rem;color:var(--text-muted)">
+                {n.data.description}
+              </p>
+            )}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</LearningLayout>

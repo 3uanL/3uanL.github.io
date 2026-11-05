@@ -1,28 +1,25 @@
 /**
- * 论文列表。改论文只改这个文件。
+ * 论文列表（以 2026-11 版 CV 为准）。
  *
  * 说明：
- * - authors 写成普通字符串即可，「Yuanhao Liu」会被自动加粗（在 PubList 组件里按 site.name 匹配）。
- * - links 里没有的字段会自动隐藏，所以留空不会出现死链。
- * - 想加论文 PDF 下载：把 PDF 放到 public/files/ 下，然后 links.pdf = '/files/你的文件名.pdf'。
+ * - authors 写普通字符串，「Yuanhao Liu」会自动加粗（PubList 组件按 site.name 匹配）。
+ * - projectId 指向 src/data/projects.ts 里的项目 id。首页把「项目 + 对应论文」合并成一张卡片，
+ *   靠这个字段把论文行挂到项目卡片下面；没有对应项目就留空。
+ * - links 里没有的字段会自动隐藏，不会出现死链。加论文 PDF 下载：
+ *   把 PDF 放到 public/files/，然后写 links.pdf = '/files/文件名.pdf'。
  */
 
 export type Publication = {
   id: string;
-  /** 作者列表，按论文上的顺序写 */
   authors: string;
-  /** 标题 */
   title: string;
-  /** 期刊或会议名（会显示为斜体） */
+  /** 期刊或会议全名 */
   venue: string;
   year: number | string;
-  /**
-   * 状态：published（已发表）/ accepted（已录用）/ submitted（已投稿）/
-   * under-review（审稿中）/ preprint（预印本）/ in-prep（撰写中）
-   */
   status: 'published' | 'accepted' | 'submitted' | 'under-review' | 'preprint' | 'in-prep';
-  /** 可选补充说明，例如 "First author" */
   note?: string;
+  /** 对应项目的 id（首页合并展示用） */
+  projectId?: string;
   links?: {
     doi?: string;
     arxiv?: string;
@@ -35,39 +32,30 @@ export type Publication = {
 
 export const publications: Publication[] = [
   {
-    id: 'uav-fire-rescue',
+    id: 'acc6g-uav',
     authors:
       'Yuanhao Liu, Leheng Qi, Nan Sun, Xiaoyang Li, Changsheng You, Zidong Han, and Yi Gong',
     title: 'Physics-Aware UAV Trajectory Design for Mission-Driven Fire Rescue Tasks',
-    venue: 'Submitted to ACC6G',
+    venue: '2026 2nd Asia Conference on Communications and 6G (ACC6G)',
     year: 2026,
-    status: 'submitted',
-    note: 'First author',
-    links: {
-      // TODO: 论文有 DOI/arXiv 后填在这里，例如 doi: '10.1109/XXX.2026.1234567'
-    },
-  },
-  {
-    id: 'pose-self-calibration',
-    authors:
-      'Miaozhang Shen, Zixu Wang, Yuyue Yang, Chunying Li, Yuanhao Liu, and Shuxiang Guo',
-    title:
-      'An Online Pose Self-Calibration Framework for Deformable Magnetmeter Arrays to Enable Accurate Capsule Endoscope Tracking',
-    venue: 'IEEE Transactions on Instrumentation and Measurement',
-    year: 2025,
     status: 'published',
+    note: 'First author',
+    projectId: 'uav-fire-rescue',
     links: {
-      // TODO: 建议补上 DOI 链接
+      doi: 'https://doi.org/10.1109/ACC6G70208.2026.11605593',
     },
   },
   {
-    id: 'soft-robotic-bandage',
+    id: 'icma-bandage',
     authors: 'Zixu Wang, Miaozhang Shen, Yuanhao Liu, and Shuxiang Guo',
     title: 'A Novel Flexible Soft Robotic-bandage for Gastrointestinal Wound Coverage Function',
     venue: 'IEEE International Conference on Mechatronics and Automation (ICMA)',
     year: 2025,
     status: 'published',
-    links: {},
+    projectId: 'icma-soft-robot',
+    links: {
+      doi: 'https://doi.org/10.1109/ICMA65362.2025.11120828',
+    },
   },
   {
     id: 'isac-beamforming',
@@ -76,6 +64,12 @@ export const publications: Publication[] = [
     venue: 'Manuscript in preparation',
     year: 2026,
     status: 'in-prep',
+    projectId: 'isac-beamforming',
     links: {},
   },
 ];
+
+/** 按 projectId 找对应的论文（首页合并卡片用） */
+export function publicationForProject(projectId: string) {
+  return publications.find((p) => p.projectId === projectId);
+}

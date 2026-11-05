@@ -1,5 +1,7 @@
 ---
 import type { Project } from '../data/projects';
+import { publicationForProject } from '../data/publications';
+import { site } from '../config';
 
 interface Props {
   project: Project;
@@ -10,21 +12,24 @@ interface Props {
 const { project, maxBullets } = Astro.props;
 const bullets = maxBullets ? project.bullets.slice(0, maxBullets) : project.bullets;
 
-/** 本地开发时提示"这里可以放图"，构建出来的正式站点不会出现这类提示 */
+/** 关联的论文（首页把项目与论文合并展示） */
+const pub = publicationForProject(project.id);
+const STATUS_LABEL: Record<string, string> = {
+  published: 'Published',
+  accepted: 'Accepted',
+  submitted: 'Submitted',
+  'under-review': 'Under review',
+  preprint: 'Preprint',
+  'in-prep': 'In preparation',
+};
+
+/** 本地开发时提示"这里可以放图"，构建出来的正式站点不会出现 */
 const showPlaceholder = import.meta.env.DEV && !project.figure;
+
+const authorParts = pub ? pub.authors.split(site.name) : [];
 ---
 
 <article class="card">
-  <h3 class="card__title">
-    <a href={`/research/${project.id}`}>{project.title}</a>
-  </h3>
-
-  <p class="card__meta">
-    {project.lab && <span>{project.lab}</span>}
-    <span>{project.period}</span>
-    {project.role && <span>{project.role}</span>}
-  </p>
-
   {
     project.figure && (
       <img
@@ -45,13 +50,78 @@ const showPlaceholder = import.meta.env.DEV && !project.figure;
     )
   }
 
+  <h3 class="card__title">
+    <a href={`/research/${project.id}`}>{project.title}</a>
+  </h3>
+
+  <p class="card__meta">
+    {project.lab && <span>{project.lab}</span>}
+    <span>{project.period}</span>
+    {project.role && <span>{project.role}</span>}
+  </p>
+
   <p class="card__body">{project.summary}</p>
 
   <ul>
     {bullets.map((b) => <li>{b}</li>)}
   </ul>
 
+  {
+    pub && (
+      <div class="card__pub">
+        <p class="card__pub-authors">
+          {authorParts.map((part, idx) => (
+            <>
+              {part}
+              {idx < authorParts.length - 1 && <strong>{site.name}</strong>}
+            </>
+          ))}
+        </p>
+        <p class="card__pub-venue">
+          <em>{pub.venue}</em>, {pub.year}.{' '}
+          <span class={pub.status === 'in-prep' ? 'tag tag--muted' : 'tag'}>
+            {STATUS_LABEL[pub.status]}
+          </span>
+          {pub.note && <span class="tag tag--muted">{pub.note}</span>}
+          {pub.links?.doi && (
+            <>
+              {' '}
+              <a href={pub.links.doi} class="card__doi">DOI</a>
+            </>
+          )}
+        </p>
+      </div>
+    )
+  }
+
   <p class="card__more">
     <a href={`/research/${project.id}`}>Details →</a>
   </p>
 </article>
+
+<style>
+  .card__pub {
+    margin-top: 0.4rem;
+    padding-top: 0.7rem;
+    border-top: 1px dashed var(--border);
+  }
+
+  .card__pub-authors {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    margin: 0 0 0.25rem;
+    line-height: 1.5;
+  }
+
+  .card__pub-venue {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .card__doi {
+    white-space: nowrap;
+    font-weight: 600;
+  }
+</style>

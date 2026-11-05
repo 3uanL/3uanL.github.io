@@ -1,36 +1,44 @@
-/** 荣誉与获奖。倒序写，最新的在最上面。 */
+/**
+ * 荣誉 / 服务 / 教育 / 技能。
+ *
+ * 拆成两块：
+ * - honors：真正是"奖"的东西（竞赛）
+ * - service：学术服务与志愿活动 —— TPC member 不是奖，放这里更合理
+ */
 
 export type Honor = {
   year: number | string;
   title: string;
-  /** 可选的补充说明（颁发机构、级别等） */
   meta?: string;
 };
 
+/** 竞赛类奖项 */
 export const honors: Honor[] = [
-  {
-    year: 2026,
-    title: 'Honorable Mention, Mathematical Contest in Modeling / Interdisciplinary Contest in Modeling (MCM/ICM)',
-  },
-  {
-    year: 2026,
-    title: 'Project Lead, University Student Innovation and Entrepreneurship Training Program',
-  },
-  {
-    year: 2026,
-    title: 'Project Member, SUSTech “Climbing Plan” Special Research Funding',
-  },
-  {
-    year: 2026,
-    title: 'Technical Program Committee (TPC) Member, Aerospace Information Perception and Intelligent Processing (AIPIP)',
-  },
   {
     year: 2025,
     title: 'National First Prize, China Undergraduate Mathematical Contest in Modeling (CUMCM)',
   },
   {
+    year: 2026,
+    title:
+      'Honorable Mention, Mathematical Contest in Modeling / Interdisciplinary Contest in Modeling (MCM/ICM)',
+  },
+];
+
+/** 学术服务与志愿活动 */
+export const service: Honor[] = [
+  {
+    year: 2024,
+    title: '“Outstanding Individual” Award, SUSTech Alma Mater Visit Program (volunteer outreach)',
+  },
+  {
     year: 2025,
     title: 'Technical Program Committee (TPC) Member, IEEE Wireless Communications and Networking Conference (WCNC)',
+  },
+  {
+    year: 2026,
+    title:
+      'Technical Program Committee (TPC) Member, Aerospace Information Perception and Intelligent Processing (AIPIP)',
   },
 ];
 
@@ -45,7 +53,7 @@ export const education = {
   advisors: ['Prof. Xiaoyang Li', 'Prof. Shuxiang Guo'],
 };
 
-/** 技能（只在 CV 页展示，首页不放 —— 你当时没选这一项） */
+/** 技能（只在 CV 页展示，首页不放） */
 export const skills: { group: string; items: string }[] = [
   {
     group: 'Programming & Systems',

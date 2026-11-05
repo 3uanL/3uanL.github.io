@@ -1,0 +1,155 @@
+---
+/**
+ * Learning Log 的阅读布局：左侧目录树（全部领域/课程/笔记）+ 右侧正文。
+ * 只有 Learning Log 的页面用它，其他页面用 BaseLayout。
+ */
+import { getCollection } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import { domains, coursesOf } from '../data/learning';
+import '../styles/learning.css';
+
+interface PagerLink {
+  href: string;
+  title: string;
+}
+
+interface Props {
+  title: string;
+  description?: string;
+  /** 当前所在领域 slug（用于高亮） */
+  domain?: string;
+  /** 当前所在课程 slug */
+  course?: string;
+  /** 当前笔记的完整 id，例如 ai/reinforcement-learning/mdp */
+  noteId?: string;
+  /** 面包屑最后一段文字 */
+  crumb?: string;
+  prev?: PagerLink;
+  next?: PagerLink;
+}
+
+const { title, description, domain, course, noteId, crumb, prev, next } = Astro.props;
+
+const notes = await getCollection('learning', ({ data }) => !data.draft);
+
+const tree = domains.map((d) => ({
+  ...d,
+  courses: coursesOf(d.slug).map((c) => ({
+    ...c,
+    notes: notes
+      .filter((n) => {
+        const [dn, cn] = n.id.split('/');
+        return dn === d.slug && cn === c.slug;
+      })
+      .sort((a, b) => a.data.order - b.data.order || a.data.title.localeCompare(b.data.title)),
+  })),
+}));
+
+const here = Astro.url.pathname.replace(/\/$/, '');
+const at = (path: string) => (here === path.replace(/\/$/, '') ? 'page' : undefined);
+const total = notes.length;
+---
+
+<BaseLayout title={title} description={description ?? 'A learning log: notes on papers, math, communications and AI.'}>
+  <div class="container container--wide">
+    <div class="docs">
+      <aside class="docs__sidebar" aria-label="Learning Log contents">
+        <a class="docs__home" href="/learning">Learning Log</a>
+
+        {
+          tree.map((d) => (
+            <div class="docs__group">
+              <a class="docs__domain" href={`/learning/${d.slug}`} aria-current={at(`/learning/${d.slug}`) as any}>
+                {d.title}
+              </a>
+              {d.courses.map((c) => (
+                <div class="docs__course">
+                  <a
+                    class="docs__course-title"
+                    href={`/learning/${d.slug}/${c.slug}`}
+                    aria-current={at(`/learning/${d.slug}/${c.slug}`) as any}
+                  >
+                    {c.title}
+                  </a>
+                  {c.notes.length > 0 && (
+                    <ul class="docs__notes">
+                      {c.notes.map((n) => (
+                        <li>
+                          <a
+                            href={`/learning/${d.slug}/${c.slug}/${n.id.split('/').slice(2).join('/')}`}
+                            aria-current={noteId === n.id ? ('page' as any) : undefined}
+                          >
+                            {n.data.title}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))
+        }
+        <p style="font-size:0.75rem;color:var(--text-faint);padding:0.4rem">
+          {total} note{total === 1 ? '' : 's'} so far
+        </p>
+      </aside>
+
+      <div class="docs__content">
+        <nav class="docs__breadcrumb" aria-label="Breadcrumb">
+          <a href="/learning">Learning Log</a>
+          {domain && (
+            <>
+              <span>/</span>
+              <a href={`/learning/${domain}`}>{domains.find((d) => d.slug === domain)?.title ?? domain}</a>
+            </>
+          )}
+          {course && (
+            <>
+              <span>/</span>
+              <a href={`/learning/${domain}/${course}`}>
+                {coursesOf(domain!).find((c) => c.slug === course)?.title ?? course}
+              </a>
+            </>
+          )}
+          {crumb && (
+            <>
+              <span>/</span>
+              <span style="color:var(--text-muted)">{crumb}</span>
+            </>
+          )}
+        </nav>
+
+        <h1 class="docs__title">{title}</h1>
+        {
+          description && (
+            <p class="docs__lede">{description}</p>
+          )
+        }
+
+        <slot />
+
+        {
+          (prev || next) && (
+            <nav class="docs__pager" aria-label="Previous and next">
+              {prev ? (
+                <a href={prev.href}>
+                  <span class="docs__pager-label">← Previous</span>
+                  {prev.title}
+                </a>
+              ) : (
+                <span />
+              )}
+              {next && (
+                <a class="docs__pager-next" href={next.href}>
+                  <span class="docs__pager-label">Next →</span>
+                  {next.title}
+                </a>
+              )}
+            </nav>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</BaseLayout>

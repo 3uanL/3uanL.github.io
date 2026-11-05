@@ -1,0 +1,54 @@
+---
+import LearningLayout from '../../../layouts/LearningLayout.astro';
+import { getCollection } from 'astro:content';
+import { domains, coursesOf } from '../../../data/learning';
+
+export async function getStaticPaths() {
+  return domains.map((d) => ({ params: { domain: d.slug }, props: { domain: d } }));
+}
+
+const { domain } = Astro.props;
+const notes = await getCollection('learning', ({ data }) => !data.draft);
+
+const courseList = coursesOf(domain.slug).map((c) => ({
+  ...c,
+  notes: notes
+    .filter((n) => {
+      const [dn, cn] = n.id.split('/');
+      return dn === domain.slug && cn === c.slug;
+    })
+    .sort((a, b) => a.data.order - b.data.order || a.data.title.localeCompare(b.data.title)),
+}));
+---
+
+<LearningLayout title={domain.title} description={domain.blurb} domain={domain.slug}>
+  {
+    courseList.map((c) => (
+      <section style="margin-bottom:2rem">
+        <h2 style="font-size:1.15rem;margin-bottom:0.2rem">
+          <a href={`/learning/${domain.slug}/${c.slug}`}>{c.title}</a>
+        </h2>
+        <p style="color:var(--text-muted);font-size:0.92rem;margin-bottom:0.5rem">{c.blurb}</p>
+
+        {c.notes.length === 0 ? (
+          <p style="font-size:0.88rem;color:var(--text-faint)">
+            No notes yet — the first one goes in <code>src/content/learning/{domain.slug}/{c.slug}/</code>.
+          </p>
+        ) : (
+          <ul style="font-size:0.95rem">
+            {c.notes.map((n) => (
+              <li>
+                <a href={`/learning/${domain.slug}/${c.slug}/${n.id.split('/').slice(2).join('/')}`}>
+                  {n.data.title}
+                </a>
+                {n.data.description && (
+                  <span style="color:var(--text-muted)"> — {n.data.description}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    ))
+  }
+</LearningLayout>

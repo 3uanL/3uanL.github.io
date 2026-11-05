@@ -1,13 +1,14 @@
 /**
  * 科研经历与项目。每个项目会自动生成一个详情页 /research/<id>。
  *
- * 加配图：把图片放到 public/figures/ 下，然后写 figure: '/figures/xxx.png'
+ * - featured: true 的项目会出现在首页 Research 区（现在只有 UAV 和 ICMA 两个）
+ * - figure: 配图路径，图片放在 public/figures/ 下
+ * - group 只用于在 /research 页做一个小标签（Research / Selected），不再分区展示
  */
 
 export type Project = {
   id: string;
   title: string;
-  /** 'Research' 显示在科研经历区，'Selected' 显示在竞赛/课程项目区 */
   group: 'Research' | 'Selected';
   /** 实验室/单位（可留空） */
   lab?: string;
@@ -19,21 +20,20 @@ export type Project = {
   period: string;
   /** 一句话概括（显示在卡片上） */
   summary: string;
-  /** 要点（会显示在卡片和详情页） */
+  /** 要点（卡片上显示前 2 条，详情页全显示） */
   bullets: string[];
-  /** 关键词标签 */
   tags?: string[];
-  /** 链接：代码仓库、数据集、论文等 */
   links?: { label: string; href: string }[];
-  /** 配图路径（放在 public/figures/ 下）。留空会显示一个"图位"提示 */
+  /** 配图路径（放在 public/figures/ 下） */
   figure?: string;
   figureCaption?: string;
-  /** 详情页补充说明（可留空） */
+  /** 是否出现在首页 */
+  featured?: boolean;
   details?: string[];
 };
 
 export const projects: Project[] = [
-  /* ---------------- 科研经历 ---------------- */
+  /* ---------------- 首页展示的两个 ---------------- */
   {
     id: 'uav-fire-rescue',
     title: 'Physics-Aware UAV Trajectory Design for Mission-Driven Fire Rescue',
@@ -53,10 +53,33 @@ export const projects: Project[] = [
     links: [
       // TODO: 代码开源后填这里，例如 { label: 'Code', href: 'https://github.com/3uanL/xxx' }
     ],
-    figure: '',
-    figureCaption:
-      'Suggested figure: the FAT-MPC framework overview, or the trajectory vs. smoke-plume comparison plot.',
+    figure: '/figures/uav-fire-scenario.png',
+    figureCaption: 'Fire-rescue scenario: high- and low-altitude UAVs, the smoke layer, and ground rescue units.',
+    featured: true,
   },
+  {
+    id: 'icma-soft-robot',
+    title: 'Flexible Soft Robotic Bandage for Gastrointestinal Wound Coverage',
+    group: 'Research',
+    lab: 'Guolab, SUSTech',
+    role: 'Co-author',
+    advisors: ['Prof. Shuxiang Guo'],
+    period: '2025',
+    summary:
+      'A magnetically actuated soft robotic bandage that folds, flaps and crawls over curved tissue so that a wound can be covered without open surgery.',
+    bullets: [
+      'Fabricated a magnetic soft submodule: silica-gel matrix loaded with NdFeB powder, shaped by spin coating, gradient curing and laser cutting, then magnetized along its longitudinal axis.',
+      'Characterised the deformation response under rotating magnetic fields and demonstrated four locomotion modes — flapping, peristaltic, folding and flipping.',
+      'Showed curvature-adaptive folding and flipping locomotion on curved intestinal phantoms, supporting wound coverage in confined spaces.',
+    ],
+    tags: ['Soft robotics', 'Magnetic actuation', 'Biomedical robotics'],
+    links: [],
+    figure: '/figures/icma-soft-robot-motion.png',
+    figureCaption: 'Selective motion control: flapping and peristaltic motion under oscillating fields, folding and flipping under manual fields.',
+    featured: true,
+  },
+
+  /* ---------------- 其余项目（首页不展示，/research 页列全） ---------------- */
   {
     id: 'isac-beamforming',
     title: 'Safety-Prioritized ISAC Beamforming for Human-Robot Collaborative Smart Factories',
@@ -74,7 +97,6 @@ export const projects: Project[] = [
     ],
     tags: ['ISAC', 'Beamforming', 'SDR', 'Robust optimization', 'CRB'],
     links: [],
-    figure: '',
     figureCaption: 'Suggested figure: sensing-QoS-tier illustration, or the power–trade-off curve.',
   },
   {
@@ -94,7 +116,6 @@ export const projects: Project[] = [
     ],
     tags: ['Physics-informed learning', 'Sim-to-real', 'Magnetic localization', 'Pose estimation'],
     links: [],
-    figure: '',
     figureCaption: 'Suggested figure: the dual-branch network architecture.',
   },
   {
@@ -114,7 +135,6 @@ export const projects: Project[] = [
     ],
     tags: ['Magnetic sensing', 'Kalman filter', 'LM-GN optimizer', 'Localization'],
     links: [],
-    figure: '',
     figureCaption: 'Suggested figure: the 5×5 sensor array setup, or the error-reduction comparison.',
   },
   {
@@ -133,11 +153,8 @@ export const projects: Project[] = [
     ],
     tags: ['Soft robotics', 'Origami design', 'SolidWorks', 'Magnetic actuation'],
     links: [],
-    figure: '',
     figureCaption: 'Suggested figure: the Kresling geometry or a gait-sequence snapshot.',
   },
-
-  /* ---------------- 竞赛 / 课程项目 ---------------- */
   {
     id: 'huawei-localization',
     title: 'Huawei Crowdsourced Offline High-Precision Localization Challenge',
@@ -153,7 +170,6 @@ export const projects: Project[] = [
     ],
     tags: ['BLE localization', 'Learning to rank', 'Ensemble', 'Cross-validation'],
     links: [],
-    figure: '',
     figureCaption: 'Suggested figure: the dual-pipeline fusion architecture.',
   },
   {
@@ -170,10 +186,9 @@ export const projects: Project[] = [
     ],
     tags: ['Mathematical modeling', 'Simulated annealing', 'PSO', 'Geometry'],
     links: [],
-    figure: '',
     figureCaption: 'Suggested figure: the occlusion geometry, or the deployment layout.',
   },
 ];
 
+export const featuredProjects = projects.filter((p) => p.featured);
 export const researchProjects = projects.filter((p) => p.group === 'Research');
-export const selectedProjects = projects.filter((p) => p.group === 'Selected');

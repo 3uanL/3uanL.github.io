@@ -1,0 +1,66 @@
+---
+import { getCollection, render } from 'astro:content';
+import LearningLayout from '../../../../layouts/LearningLayout.astro';
+import 'katex/dist/katex.min.css';
+
+export async function getStaticPaths() {
+  const notes = (await getCollection('learning', ({ data }) => !data.draft)).sort(
+    (a, b) => a.data.order - b.data.order || a.data.title.localeCompare(b.data.title),
+  );
+
+  return notes.map((note) => {
+    const [domain, course, ...rest] = note.id.split('/');
+    const siblings = notes.filter((n) => n.id.startsWith(`${domain}/${course}/`));
+    const index = siblings.findIndex((n) => n.id === note.id);
+    const toLink = (n?: (typeof siblings)[number]) =>
+      n
+        ? {
+            href: `/learning/${n.id.split('/').join('/')}`,
+            title: n.data.title,
+          }
+        : undefined;
+
+    return {
+      params: { domain, course, note: rest.join('/') },
+      props: {
+        note,
+        prev: toLink(siblings[index - 1]),
+        next: toLink(siblings[index + 1]),
+      },
+    };
+  });
+}
+
+const { note, prev, next } = Astro.props;
+const [domain, course] = note.id.split('/');
+const { Content } = await render(note);
+---
+
+<LearningLayout
+  title={note.data.title}
+  description={note.data.description}
+  domain={domain}
+  course={course}
+  noteId={note.id}
+  crumb={note.data.title}
+  prev={prev}
+  next={next}
+>
+  <div class="docs__meta">
+    {note.data.updated && (
+      <span>
+        Updated{' '}
+        {note.data.updated.toLocaleDateString('en-GB', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        })}
+      </span>
+    )}
+    {note.data.tags.length > 0 && <span>{note.data.tags.map((t) => `#${t}`).join(' ')}</span>}
+  </div>
+
+  <div class="prose">
+    <Content />
+  </div>
+</LearningLayout>

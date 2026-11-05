@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { domains, coursesOf } from '../../data/learning';
+import '../../styles/learning.css';
+
+const notes = await getCollection('learning', ({ data }) => !data.draft);
+
+const grouped = domains.map((d) => ({
+  ...d,
+  courses: coursesOf(d.slug).map((c) => ({
+    ...c,
+    notes: notes.filter((n) => {
+      const [dn, cn] = n.id.split('/');
+      return dn === d.slug && cn === c.slug;
+    }),
+  })),
+}));
+
+const total = notes.length;
+---
+
+<BaseLayout
+  title="Learning Log"
+  description="A learning log: paper notes, math and optimization derivations, 3GPP and wireless systems reading, and reinforcement learning."
+>
+  <div class="container container--wide">
+    <h1>Learning Log</h1>
+    <p style="color:var(--text-muted);max-width:44rem">
+      Notes from learning in public — what I read, what I re-derived by hand, and where I got stuck.
+      The point is not to look organised; it is that writing something down is the only way I find
+      out whether I actually understood it.
+    </p>
+    <p style="font-size:0.85rem;color:var(--text-faint)">
+      {total} note{total === 1 ? '' : 's'} across {domains.length} domains
+    </p>
+
+    <div class="domain-grid" style="margin-top:2rem">
+      {
+        grouped.map((d) => {
+          const count = d.courses.reduce((sum, c) => sum + c.notes.length, 0);
+          return (
+            <article class="domain-card">
+              <h2>
+                <a href={`/learning/${d.slug}`}>{d.title}</a>
+              </h2>
+              <p>{d.blurb}</p>
+              {d.courses.length > 0 && (
+                <ul>
+                  {d.courses.map((c) => (
+                    <li>
+                      <a href={`/learning/${d.slug}/${c.slug}`}>{c.title}</a>
+                      {c.notes.length > 0 && (
+                        <span style="color:var(--text-faint)"> ({c.notes.length})</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p class="domain-card__count">
+                {count === 0 ? 'no notes yet' : `${count} note${count === 1 ? '' : 's'}`}
+              </p>
+            </article>
+          );
+        })
+      }
+    </div>
+  </div>
+</BaseLayout>

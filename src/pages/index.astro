@@ -3,15 +3,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/Hero.astro';
 import Section from '../components/Section.astro';
 import NewsList from '../components/NewsList.astro';
-import PubList from '../components/PubList.astro';
 import ProjectCard from '../components/ProjectCard.astro';
-import { news, newsOnHomepage } from '../data/news';
-import { publications } from '../data/publications';
-import { researchProjects, selectedProjects } from '../data/projects';
-import { honors } from '../data/honors';
-import { site, about } from '../config';
+import { getCollection } from 'astro:content';
+import { news } from '../data/news';
+import { featuredProjects } from '../data/projects';
+import { honors, service } from '../data/honors';
+import { domains, coursesOf } from '../data/learning';
+import { site } from '../config';
 
-/** 结构化数据：让 Google 知道这是一个研究者主页 */
+/** Learning Log 概览（各领域有多少篇笔记） */
+const learningNotes = await getCollection('learning', ({ data }) => !data.draft);
+const learningSummary = domains.map((d) => ({
+  ...d,
+  count: learningNotes.filter((n) => n.id.startsWith(`${d.slug}/`)).length,
+  courses: coursesOf(d.slug),
+}));
+const totalNotes = learningNotes.length;
+
+/** 结构化数据：让搜索引擎知道这是一个研究者主页 */
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Person',
@@ -23,9 +32,7 @@ const jsonLd = {
     '@type': 'CollegeOrUniversity',
     name: 'Southern University of Science and Technology',
   },
-  sameAs: [site.links.github, site.links.scholar, site.links.linkedin, site.links.orcid].filter(
-    Boolean,
-  ),
+  sameAs: [site.links.github, site.links.bilibili, site.links.scholar].filter(Boolean),
   knowsAbout: [
     'Wireless communications',
     'Integrated sensing and communication',
@@ -44,23 +51,30 @@ const jsonLd = {
     <Hero />
 
     <Section title="News" action={{ href: '/news', label: 'All news →' }}>
-      <NewsList items={news} limit={newsOnHomepage} />
-    </Section>
-
-    <Section title="Publications" action={{ href: '/publications', label: 'All publications →' }}>
-      <PubList items={publications} />
+      <NewsList items={news} />
     </Section>
 
     <Section title="Research" action={{ href: '/research', label: 'All projects →' }}>
-      <div class="card-grid card-grid--2">
-        {researchProjects.map((project) => <ProjectCard project={project} maxBullets={2} />)}
+      <div class="card-grid">
+        {featuredProjects.map((project) => <ProjectCard project={project} />)}
       </div>
     </Section>
 
-    <Section title="Selected projects">
-      <div class="card-grid card-grid--2">
-        {selectedProjects.map((project) => <ProjectCard project={project} maxBullets={1} />)}
-      </div>
+    <Section title="Learning Log" action={{ href: '/learning', label: 'Open →' }}>
+      <p style="color:var(--text-muted);font-size:0.95rem;margin-bottom:1rem">
+        Notes from learning in public — papers, math, 3GPP and reinforcement learning.
+        {totalNotes > 0 && <> {totalNotes} notes so far.</>}
+      </p>
+      <p style="font-size:0.9rem;display:flex;flex-wrap:wrap;gap:0.5rem">
+        {
+          learningSummary.map((d) => (
+            <a class="btn" href={`/learning/${d.slug}`}>
+              {d.title}
+              <span style="color:var(--text-faint)">({d.count})</span>
+            </a>
+          ))
+        }
+      </p>
     </Section>
 
     <Section title="Honors & Awards">
@@ -69,24 +83,24 @@ const jsonLd = {
           honors.map((h) => (
             <li>
               <time>{h.year}</time>
-              <p>
-                {h.title}
-                {h.meta && <span> — {h.meta}</span>}
-              </p>
+              <p>{h.title}</p>
             </li>
           ))
         }
       </ul>
     </Section>
 
-    <Section title="About">
-      {about.bio.map((paragraph) => <p>{paragraph}</p>)}
-      {about.hobbies && <p>{about.hobbies}</p>}
-      <p>
-        You can reach me at <a href={`mailto:${site.email}`}>{site.email}</a>
-        {site.location && <> · based in {site.location}</>}. More background is in my{' '}
-        <a href="/cv">CV</a>.
-      </p>
+    <Section title="Service & Activities">
+      <ul class="news">
+        {
+          service.map((s) => (
+            <li>
+              <time>{s.year}</time>
+              <p>{s.title}</p>
+            </li>
+          ))
+        }
+      </ul>
     </Section>
   </div>
 </BaseLayout>

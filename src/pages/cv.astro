@@ -2,16 +2,11 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PubList from '../components/PubList.astro';
 import { publications } from '../data/publications';
-import { researchProjects, selectedProjects } from '../data/projects';
-import { honors, education, skills } from '../data/honors';
+import { researchProjects, projects } from '../data/projects';
+import { honors, service, education, skills } from '../data/honors';
 import { site } from '../config';
 
-/** 同一年份只显示一次，列表更好读 */
-const honorsByYear = honors.reduce<Record<string, typeof honors>>((acc, h) => {
-  const key = String(h.year);
-  (acc[key] ??= []).push(h);
-  return acc;
-}, {});
+const selectedProjects = projects.filter((p) => p.group === 'Selected');
 ---
 
 <BaseLayout
@@ -111,17 +106,23 @@ const honorsByYear = honors.reduce<Record<string, typeof honors>>((acc, h) => {
       <h2 class="section__title">Honors & Awards</h2>
       <ul>
         {
-          Object.entries(honorsByYear).map(([year, items]) => (
+          honors.map((h) => (
             <li>
-              <strong>{year}</strong>
-              <ul>
-                {items.map((h) => (
-                  <li>
-                    {h.title}
-                    {h.meta && <> — {h.meta}</>}
-                  </li>
-                ))}
-              </ul>
+              <strong>{h.year}</strong> — {h.title}
+              {h.meta && <> — {h.meta}</>}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="cv-section">
+      <h2 class="section__title">Academic Service & Activities</h2>
+      <ul>
+        {
+          service.map((s) => (
+            <li>
+              <strong>{s.year}</strong> — {s.title}
             </li>
           ))
         }
